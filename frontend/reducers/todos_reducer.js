@@ -30,7 +30,7 @@ const todosReducer = (oldState = initialState, action) => {
 
       return newState;
     case RECEIVE_TODO:
-      let todos = merge(oldState.todos, action.todo);
+      let todos = merge({}, oldState, action.todo);
       return todos;
     default:
       return oldState;
