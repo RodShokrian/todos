@@ -12,9 +12,12 @@ class TodoForm extends React.Component {
   addTodo(event) {
     event.preventDefault();
     let newTodo = {};
+
     newTodo.id = uniqueIdifier();
     newTodo.title = document.getElementById('todo-title').value;
     newTodo.body = document.getElementById('todo-body').value;
+    newTodo.done = false;
+
     console.log(makeTodo(newTodo));
     this.props.receiveTodo(makeTodo(newTodo));
   }

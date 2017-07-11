@@ -23548,9 +23548,10 @@ var todosReducer = function todosReducer() {
 
   Object.freeze(oldState);
 
+  var newState = {};
+
   switch (action.type) {
     case _todo_actions.RECEIVE_TODOS:
-      var newState = {};
 
       action.todos.forEach(function (todo) {
         newState[todo.id] = todo;
@@ -23560,6 +23561,12 @@ var todosReducer = function todosReducer() {
     case _todo_actions.RECEIVE_TODO:
       var todos = (0, _lodash.merge)({}, oldState, action.todo);
       return todos;
+
+    case _todo_actions.REMOVE_TODO:
+      newState = (0, _lodash.merge)({}, oldState);
+      delete newState[action.todo.id];
+      console.log(newState);
+      return newState;
     default:
       return oldState;
   }
@@ -23579,6 +23586,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 var RECEIVE_TODOS = exports.RECEIVE_TODOS = "RECEIVE_TODOS";
 var RECEIVE_TODO = exports.RECEIVE_TODO = "RECEIVE_TODO";
+var REMOVE_TODO = exports.REMOVE_TODO = "REMOVE_TODO";
 
 var receiveTodos = exports.receiveTodos = function receiveTodos(todos) {
   return {
@@ -23594,8 +23602,16 @@ var receiveTodo = exports.receiveTodo = function receiveTodo(todo) {
   };
 };
 
+var removeTodo = exports.removeTodo = function removeTodo(todo) {
+  return {
+    type: REMOVE_TODO,
+    todo: todo
+  };
+};
+
 window.receiveTodos = receiveTodos;
 window.receiveTodo = receiveTodo;
+window.removeTodo = removeTodo;
 
 /***/ }),
 /* 210 */
@@ -42064,6 +42080,9 @@ var mapDispatchToProps = function mapDispatchToProps(dispatch) {
   return {
     receiveTodo: function receiveTodo(todo) {
       return dispatch((0, _todo_actions.receiveTodo)(todo));
+    },
+    removeTodo: function removeTodo(todo) {
+      return dispatch((0, _todo_actions.removeTodo)(todo));
     }
   };
 };
@@ -42099,7 +42118,8 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 var TodoList = function TodoList(_ref) {
   var todos = _ref.todos,
-      receiveTodo = _ref.receiveTodo;
+      receiveTodo = _ref.receiveTodo,
+      removeTodo = _ref.removeTodo;
   return _react2.default.createElement(
     'div',
     null,
@@ -42107,7 +42127,9 @@ var TodoList = function TodoList(_ref) {
       'ul',
       null,
       todos.map(function (todo) {
-        return _react2.default.createElement(_todo_list_item2.default, { todo: todo, key: todo.id });
+        return _react2.default.createElement(_todo_list_item2.default, { todo: todo, key: todo.id,
+          receiveTodo: receiveTodo,
+          removeTodo: removeTodo });
       })
     ),
     _react2.default.createElement(_todo_form2.default, { receiveTodo: receiveTodo })
@@ -42131,14 +42153,43 @@ var _react = __webpack_require__(90);
 
 var _react2 = _interopRequireDefault(_react);
 
+var _selectors = __webpack_require__(211);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+var toggleDone = function toggleDone(todo, receiveTodo) {
+  todo.done = !todo.done;
+  receiveTodo((0, _selectors.makeTodo)(todo));
+};
+
+var doneButtonTextifier = function doneButtonTextifier(todo) {
+  return todo.done ? "Undo" : "Done";
+};
+
 var TodoListItem = function TodoListItem(_ref) {
-  var todo = _ref.todo;
+  var todo = _ref.todo,
+      receiveTodo = _ref.receiveTodo,
+      removeTodo = _ref.removeTodo;
   return _react2.default.createElement(
     'li',
     null,
-    todo.title
+    todo.title,
+    ' ',
+    todo.body,
+    _react2.default.createElement(
+      'button',
+      { onClick: function onClick() {
+          return toggleDone(todo, receiveTodo);
+        } },
+      doneButtonTextifier(todo)
+    ),
+    _react2.default.createElement(
+      'button',
+      { onClick: function onClick() {
+          return removeTodo(todo);
+        } },
+      'Delete'
+    )
   );
 };
 
@@ -42192,9 +42243,12 @@ var TodoForm = function (_React$Component) {
     value: function addTodo(event) {
       event.preventDefault();
       var newTodo = {};
+
       newTodo.id = (0, _util2.default)();
       newTodo.title = document.getElementById('todo-title').value;
       newTodo.body = document.getElementById('todo-body').value;
+      newTodo.done = false;
+
       console.log((0, _selectors.makeTodo)(newTodo));
       this.props.receiveTodo((0, _selectors.makeTodo)(newTodo));
     }
